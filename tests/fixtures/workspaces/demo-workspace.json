@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "workspaceId": "demo-cockpit-lab",
+  "files": [
+    {
+      "path": "README.md",
+      "kind": "file",
+      "content": "# Cockpit Lab\n\nA seeded workspace for explorer acceptance tests.\n"
+    },
+    {
+      "path": "package.json",
+      "kind": "file",
+      "content": "{\n  \"name\": \"cockpit-lab\"\n}\n"
+    },
+    {
+      "path": "src/index.ts",
+      "kind": "file",
+      "content": "export const workspaceName = \"cockpit-lab\";\n"
+    }
+  ]
+}

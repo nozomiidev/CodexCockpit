@@ -31,6 +31,7 @@ import {
 } from "react";
 import { Link } from "react-router-dom";
 import { type Lens, previewEvents, redactWireJson, type Seat, validateDraft } from "./domain";
+import { Explorer } from "./explorer";
 import { useSessionStore } from "./session-store";
 
 interface CockpitProps {
@@ -539,7 +540,8 @@ export function Cockpit({ sessionId, seat, dual }: CockpitProps) {
   const reduceMotion = useReducedMotion();
   const [showRecorder, setShowRecorder] = useState(true);
   const error = useSessionStore((state) => state.error);
-  const columns = dual ? "dual" : seat;
+  const hasTerminal = dual || seat === "terminal";
+  const columns = `${dual ? "dual" : seat}${hasTerminal ? " with-explorer" : ""}`;
   useEffect(() => {
     document.title = `${seat === "model" ? "Human model" : "Harness"} · Codex Cockpit`;
   }, [seat]);
@@ -560,6 +562,7 @@ export function Cockpit({ sessionId, seat, dual }: CockpitProps) {
         </div>
       )}
       <main className={`workbench ${columns}`}>
+        {hasTerminal && <Explorer sessionId={sessionId} />}
         <AnimatePresence initial={false}>
           {(dual || seat === "terminal") && (
             <motion.div
