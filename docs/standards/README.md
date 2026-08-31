@@ -1,6 +1,7 @@
 # CodexCockpit engineering standards
 
-更新日: 2026-08-31  
+更新日: 2026-08-31
+
 状態: Accepted / 実装開始時から必須
 
 ## 決定
