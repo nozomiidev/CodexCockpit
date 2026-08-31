@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-cockpit.dev/schemas/v1/project-id.schema.json",
+  "title": "CodexCockpit project identifier",
+  "type": "string",
+  "pattern": "^(ses|evt|cmd|req|rsp|pty|art|ply|inf|clm)_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+}

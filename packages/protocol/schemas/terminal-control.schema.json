@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-cockpit.dev/schemas/v1/terminal-control.schema.json",
+  "title": "Terminal JSON control message",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "type", "cols", "rows"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "type": { "const": "terminal.resize" },
+        "cols": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "rows": { "type": "integer", "minimum": 1, "maximum": 1000 }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "type"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "type": { "const": "terminal.close" }
+      }
+    }
+  ]
+}

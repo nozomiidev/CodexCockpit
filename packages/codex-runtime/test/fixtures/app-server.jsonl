@@ -1,0 +1,2 @@
+{"id":1,"result":{"userAgent":"codex-cli"}}
+{"method":"command/exec/outputDelta","params":{"processId":"shell-1","stream":"stdout","deltaBase64":"JCA=","capReached":false}}

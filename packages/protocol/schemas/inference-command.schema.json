@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-cockpit.dev/schemas/v1/inference-command.schema.json",
+  "title": "Inference command",
+  "allOf": [
+    { "$ref": "https://codex-cockpit.dev/schemas/v1/command-envelope.schema.json" },
+    {
+      "oneOf": [
+        { "$ref": "#/$defs/claim" },
+        { "$ref": "#/$defs/renew" },
+        { "$ref": "#/$defs/release" },
+        { "$ref": "#/$defs/commit" }
+      ]
+    }
+  ],
+  "$defs": {
+    "inferenceId": {
+      "type": "string",
+      "pattern": "^inf_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "claimId": {
+      "type": "string",
+      "pattern": "^clm_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "basePayload": {
+      "type": "object",
+      "required": ["inferenceId", "claimId"],
+      "properties": {
+        "inferenceId": { "$ref": "#/$defs/inferenceId" },
+        "claimId": { "$ref": "#/$defs/claimId" }
+      }
+    },
+    "claim": {
+      "properties": {
+        "type": { "const": "inference.request.claim" },
+        "payload": {
+          "allOf": [
+            { "$ref": "#/$defs/basePayload" },
+            {
+              "required": ["leaseDurationMs"],
+              "properties": {
+                "leaseDurationMs": { "type": "integer", "minimum": 1000, "maximum": 300000 }
+              },
+              "unevaluatedProperties": false
+            }
+          ]
+        }
+      }
+    },
+    "renew": {
+      "properties": {
+        "type": { "const": "inference.request.renew" },
+        "payload": {
+          "allOf": [
+            { "$ref": "#/$defs/basePayload" },
+            {
+              "required": ["expectedRevision", "leaseDurationMs"],
+              "properties": {
+                "expectedRevision": { "type": "integer", "minimum": 1 },
+                "leaseDurationMs": { "type": "integer", "minimum": 1000, "maximum": 300000 }
+              },
+              "unevaluatedProperties": false
+            }
+          ]
+        }
+      }
+    },
+    "release": {
+      "properties": {
+        "type": { "const": "inference.request.release" },
+        "payload": {
+          "allOf": [
+            { "$ref": "#/$defs/basePayload" },
+            {
+              "required": ["expectedRevision"],
+              "properties": { "expectedRevision": { "type": "integer", "minimum": 1 } },
+              "unevaluatedProperties": false
+            }
+          ]
+        }
+      }
+    },
+    "commit": {
+      "properties": {
+        "type": { "const": "inference.response.commit" },
+        "payload": {
+          "allOf": [
+            { "$ref": "#/$defs/basePayload" },
+            {
+              "required": ["expectedRevision", "responseId", "responseDigest"],
+              "properties": {
+                "expectedRevision": { "type": "integer", "minimum": 1 },
+                "responseId": {
+                  "type": "string",
+                  "pattern": "^rsp_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+                },
+                "responseDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+              },
+              "unevaluatedProperties": false
+            }
+          ]
+        }
+      }
+    }
+  }
+}

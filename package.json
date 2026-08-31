@@ -1,0 +1,39 @@
+{
+  "name": "codex-cockpit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": ">=11.24.0 <12"
+  },
+  "scripts": {
+    "build": "corepack pnpm --recursive --if-present build",
+    "dev": "corepack pnpm --filter @codex-cockpit/web dev",
+    "dev:companion": "corepack pnpm --filter @codex-cockpit/companion dev",
+    "format": "biome check --write . && prettier --write \"**/*.{md,mdx,yaml,yml}\"",
+    "format:check": "biome check . && prettier --check \"**/*.{md,mdx,yaml,yml}\"",
+    "lint": "biome lint . && markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
+    "typecheck": "corepack pnpm --recursive --if-present typecheck",
+    "test": "corepack pnpm test:unit",
+    "test:unit": "corepack pnpm --recursive --if-present test",
+    "test:contract": "corepack pnpm --recursive --if-present test:contract",
+    "test:e2e": "playwright test",
+    "test:a11y": "playwright test tests/e2e/responsive-accessibility.spec.ts",
+    "verify": "corepack pnpm format:check && corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test:unit && corepack pnpm test:contract",
+    "ci": "corepack pnpm verify && corepack pnpm build && corepack pnpm test:e2e"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@biomejs/biome": "2.5.11",
+    "@openai/codex": "0.151.0",
+    "@playwright/test": "1.62.1",
+    "@types/node": "24.13.3",
+    "fast-check": "4.9.0",
+    "markdownlint-cli2": "0.23.2",
+    "prettier": "3.9.6",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}

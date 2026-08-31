@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-cockpit.dev/schemas/v1/terminal-status.schema.json",
+  "title": "Terminal lifecycle status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "type", "state"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "type": { "const": "terminal.status" },
+    "state": { "enum": ["starting", "running", "stopping", "exited", "failed"] },
+    "exitCode": {
+      "type": ["integer", "null"],
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "signal": { "type": ["string", "null"] },
+    "message": { "type": "string" }
+  }
+}

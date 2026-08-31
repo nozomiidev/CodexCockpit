@@ -1,0 +1,61 @@
+{
+  "fixtureVersion": 1,
+  "name": "manual text response",
+  "request": {
+    "model": "gpt-5.5",
+    "instructions": "You are a coding agent. Inspect the workspace before editing.",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "Summarize the repository in one sentence."
+          }
+        ]
+      }
+    ],
+    "stream": true,
+    "tools": []
+  },
+  "draft": {
+    "kind": "text",
+    "text": "This repository contains the Codex Cockpit learning simulator."
+  },
+  "expectedEvents": [
+    {
+      "type": "response.created",
+      "response": {
+        "id": "resp_fixture_text"
+      }
+    },
+    {
+      "type": "response.output_text.delta",
+      "item_id": "msg_fixture_text",
+      "output_index": 0,
+      "content_index": 0,
+      "delta": "This repository contains the Codex Cockpit learning simulator."
+    },
+    {
+      "type": "response.output_item.done",
+      "output_index": 0,
+      "item": {
+        "id": "msg_fixture_text",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "This repository contains the Codex Cockpit learning simulator."
+          }
+        ]
+      }
+    },
+    {
+      "type": "response.completed",
+      "response": {
+        "id": "resp_fixture_text"
+      }
+    }
+  ]
+}

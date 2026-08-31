@@ -1,0 +1,145 @@
+{
+  "fixtureVersion": 1,
+  "name": "manual tool call followed by final text",
+  "requests": [
+    {
+      "model": "gpt-5.5",
+      "instructions": "You are a coding agent. Use the offered tools when evidence is required.",
+      "input": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "input_text",
+              "text": "What is the package name in package.json?"
+            }
+          ]
+        }
+      ],
+      "stream": true,
+      "tool_choice": "auto",
+      "tools": [
+        {
+          "type": "function",
+          "name": "shell",
+          "description": "Run a command in the authoritative workspace.",
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "required": ["command"]
+          }
+        }
+      ]
+    },
+    {
+      "model": "gpt-5.5",
+      "instructions": "You are a coding agent. Use the offered tools when evidence is required.",
+      "input": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "input_text",
+              "text": "What is the package name in package.json?"
+            }
+          ]
+        },
+        {
+          "id": "fc_fixture_shell",
+          "type": "function_call",
+          "call_id": "call_fixture_shell",
+          "name": "shell",
+          "arguments": "{\"command\":\"node -p \\\"require('./package.json').name\\\"\"}"
+        },
+        {
+          "type": "function_call_output",
+          "call_id": "call_fixture_shell",
+          "output": "codex-cockpit\n"
+        }
+      ],
+      "stream": true,
+      "tools": []
+    }
+  ],
+  "drafts": [
+    {
+      "kind": "tool",
+      "toolName": "shell",
+      "arguments": {
+        "command": "node -p \"require('./package.json').name\""
+      }
+    },
+    {
+      "kind": "text",
+      "text": "The package name is codex-cockpit."
+    }
+  ],
+  "expectedEventBatches": [
+    [
+      {
+        "type": "response.created",
+        "response": {
+          "id": "resp_fixture_tool"
+        }
+      },
+      {
+        "type": "response.output_item.done",
+        "output_index": 0,
+        "item": {
+          "id": "fc_fixture_shell",
+          "type": "function_call",
+          "call_id": "call_fixture_shell",
+          "name": "shell",
+          "arguments": "{\"command\":\"node -p \\\"require('./package.json').name\\\"\"}"
+        }
+      },
+      {
+        "type": "response.completed",
+        "response": {
+          "id": "resp_fixture_tool"
+        }
+      }
+    ],
+    [
+      {
+        "type": "response.created",
+        "response": {
+          "id": "resp_fixture_final"
+        }
+      },
+      {
+        "type": "response.output_text.delta",
+        "item_id": "msg_fixture_final",
+        "output_index": 0,
+        "content_index": 0,
+        "delta": "The package name is codex-cockpit."
+      },
+      {
+        "type": "response.output_item.done",
+        "output_index": 0,
+        "item": {
+          "id": "msg_fixture_final",
+          "type": "message",
+          "role": "assistant",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "The package name is codex-cockpit."
+            }
+          ]
+        }
+      },
+      {
+        "type": "response.completed",
+        "response": {
+          "id": "resp_fixture_final"
+        }
+      }
+    ]
+  ]
+}

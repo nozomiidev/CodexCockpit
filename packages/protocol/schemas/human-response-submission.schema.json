@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-cockpit.dev/schemas/v1/human-response-submission.schema.json",
+  "title": "Human response submission",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "commandId",
+    "sessionId",
+    "inferenceId",
+    "claimId",
+    "playerId",
+    "expectedRevision",
+    "draft"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "commandId": { "$ref": "#/$defs/commandId" },
+    "sessionId": { "$ref": "#/$defs/sessionId" },
+    "inferenceId": { "$ref": "#/$defs/inferenceId" },
+    "claimId": { "$ref": "#/$defs/claimId" },
+    "playerId": { "$ref": "#/$defs/playerId" },
+    "expectedRevision": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+    "draft": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "text"],
+          "properties": {
+            "kind": { "const": "text" },
+            "text": { "type": "string", "pattern": "\\S" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "toolName", "argumentsJson"],
+          "properties": {
+            "kind": { "const": "tool" },
+            "toolName": { "type": "string", "pattern": "\\S" },
+            "argumentsJson": {
+              "type": "string",
+              "minLength": 2,
+              "contentMediaType": "application/json",
+              "contentSchema": { "type": "object" }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "commandId": {
+      "type": "string",
+      "pattern": "^cmd_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "sessionId": {
+      "type": "string",
+      "pattern": "^ses_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "inferenceId": {
+      "type": "string",
+      "pattern": "^inf_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "claimId": {
+      "type": "string",
+      "pattern": "^clm_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "playerId": {
+      "type": "string",
+      "pattern": "^ply_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    }
+  }
+}
