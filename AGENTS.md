@@ -62,6 +62,37 @@ This file is normative for the whole repository. Read
   and measurements. Aggressively improve latency, throughput, memory, bundle size, and
   startup cost without weakening behavior, diagnostics, portability, or tests.
 
+## Multi-agent execution
+
+- Operate with the ownership, product judgment, technical depth, and delivery discipline
+  expected from a highly experienced Silicon Valley staff-level engineer. Turn that
+  standard into evidence: coherent architecture, polished behavior, measured trade-offs,
+  passing gates, and a product another team can safely own.
+- For every non-trivial research, design, implementation, or verification phase, use the
+  maximum parallel agent capacity available. Keep the critical path moving in the main
+  agent while delegated work proceeds; do not create agents merely to observe or repeat
+  the same task.
+- The main agent owns architecture, contracts, decomposition, sequencing, shared files,
+  integration, final verification, commits, and pushes. Delegation never transfers
+  accountability and no subagent result is accepted without inspecting its evidence and
+  relevant diff.
+- Partition work by explicit, non-overlapping ownership boundaries. Every assignment must
+  name its objective, allowed files, required contracts, verification, and handoff. One
+  agent owns a file at a time unless the owners explicitly coordinate a handoff.
+- Agents should communicate directly when interfaces meet, request early clarification,
+  share discovered constraints, and review adjacent assumptions. The main agent resolves
+  conflicts and broadcasts contract changes before dependent work continues.
+- Use follow-up assignments to keep available capacity working on useful review,
+  integration tests, performance, accessibility, failure modes, or documentation until
+  the phase is genuinely complete. Speed comes from parallelism and clear contracts, not
+  from skipping design, review, testing, or cleanup.
+- Subagents must not independently change architecture, dependency majors, shared root
+  configuration, generated upstream contracts, deployment state, Git history, or remote
+  branches. Propose such changes to the main agent with evidence.
+- Integrate in coherent vertical slices. After each slice, the main agent runs the
+  relevant feedback loop, corrects cross-boundary failures, records the decision, and
+  creates a reviewable commit before beginning an incompatible slice.
+
 ## Repository and language rules
 
 - Runtime baseline: Node.js 24 LTS, pnpm 11.24.0, TypeScript 5.9, ESM only.
