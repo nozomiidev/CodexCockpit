@@ -53,6 +53,11 @@ Playwright starts the configured web server and waits for an explicit URL respon
 | `keyboard-ime.spec.ts`             | Keyboard completion path and composition-safe shortcuts             |
 | `responsive-accessibility.spec.ts` | Mobile/desktop fit, automated WCAG checks, reduced motion           |
 
+`apps/companion/test/acceptance.test.ts` is the decisive native boundary test. It covers a
+validated Responses claim/commit with canonical SSE ordering and an authenticated terminal
+ticket, marker command, resize diagnostic, and close lifecycle, including adversarial ticket
+and Origin cases.
+
 The selectors prefer accessible roles and names. `data-testid` is reserved for composite surfaces whose semantic role does not uniquely identify the observed subsystem. A renamed visible label is a deliberate UX contract change and should update its test in the same commit.
 
 ## Deterministic fixtures
