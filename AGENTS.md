@@ -61,20 +61,15 @@ pnpm test:e2e
 analysis, type checking, unit tests, and contract tests. E2E is additionally required
 for UI, transport, terminal, session, or accessibility changes.
 
-## Tests and safety
+## Tests
 
 - Use Vitest for unit, property, integration, and protocol contract tests. Use
   Playwright Test for real-browser, two-window, IME, reconnect, and accessibility
   behavior. Do not introduce Jest or another general test runner.
 - Tests must be deterministic: fixed clocks where appropriate, explicit random seeds,
   temporary workspaces, bounded waits, and no dependence on developer credentials.
-- Never snapshot secrets, authorization headers, host paths, raw terminal input, or
-  unreviewed prompt/model payloads.
 - Treat terminal bytes as bytes until the rendering boundary. Preserve backpressure,
   cancellation, and disconnect behavior in tests.
-- Do not log prompt content, terminal content, environment values, or raw headers by
-  default. Structured metadata logs must use the repository redaction policy.
-- No browser-callable endpoint may expose arbitrary app-server RPC or unsandboxed argv.
 
 ## Git and review
 
