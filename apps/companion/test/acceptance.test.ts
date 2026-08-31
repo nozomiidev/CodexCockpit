@@ -121,8 +121,8 @@ test("companion completes one Responses and terminal lifecycle contract", async 
     try {
       const running = await inbox.next(
         (message) =>
-          message.kind === "control" && message.value.type === "terminal.status"
-            ? message.value.state === "running"
+          message.kind === "control" && recordValue(message.value, "type") === "terminal.status"
+            ? recordValue(message.value, "state") === "running"
             : false,
         "terminal running status",
       );
@@ -131,7 +131,7 @@ test("companion completes one Responses and terminal lifecycle contract", async 
       const resizedMessage = inbox.next(
         (message) =>
           message.kind === "control" &&
-          message.value.message === "resize_unsupported_by_pipe_backend",
+          recordValue(message.value, "message") === "resize_unsupported_by_pipe_backend",
         "resize diagnostic",
       );
       socket.send(
@@ -229,8 +229,9 @@ async function waitForPending(
       headers: { authorization },
     });
     const value: unknown = response.json();
-    if (isRecord(value) && Array.isArray(value.items) && isPendingView(value.items[0])) {
-      return value.items[0];
+    if (isRecord(value)) {
+      const items = recordValue(value, "items");
+      if (Array.isArray(items) && isPendingView(items[0])) return items[0];
     }
     await new Promise<void>((resolve) => setImmediate(resolve));
   }
@@ -250,8 +251,8 @@ function parseSseData(payload: string): readonly SseEvent[] {
     .map((value) => {
       if (
         !isRecord(value) ||
-        typeof value.type !== "string" ||
-        typeof value.sequence_number !== "number"
+        typeof recordValue(value, "type") !== "string" ||
+        typeof recordValue(value, "sequence_number") !== "number"
       ) {
         throw new Error("SSE data is not a sequenced Responses event");
       }
@@ -364,12 +365,16 @@ function jsonRecord(text: string): Readonly<Record<string, unknown>> {
 function isPendingView(value: unknown): value is PendingView {
   return (
     isRecord(value) &&
-    typeof value.id === "string" &&
-    typeof value.responseId === "string" &&
-    isRecord(value.request)
+    typeof recordValue(value, "id") === "string" &&
+    typeof recordValue(value, "responseId") === "string" &&
+    isRecord(recordValue(value, "request"))
   );
 }
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function recordValue(record: Readonly<Record<string, unknown>>, key: string): unknown {
+  return record[key];
 }
