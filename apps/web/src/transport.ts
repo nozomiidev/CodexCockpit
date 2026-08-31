@@ -10,6 +10,278 @@ export interface TerminalConnection {
   resize(cols: number, rows: number): void;
   dispose(): void;
 }
+
+type DemoTerminalOutput = (value: string) => void;
+
+const DEMO_PROMPT = "$ ";
+const DEMO_HISTORY_LIMIT = 50;
+const DEMO_ESCAPE_ACTIONS: readonly [
+  sequence: string,
+  action: "left" | "right" | "home" | "end" | "delete" | "up" | "down",
+][] = [
+  ["\u001b[3~", "delete"],
+  ["\u001b[1~", "home"],
+  ["\u001b[4~", "end"],
+  ["\u001b[7~", "home"],
+  ["\u001b[8~", "end"],
+  ["\u001b[D", "left"],
+  ["\u001b[C", "right"],
+  ["\u001b[H", "home"],
+  ["\u001b[F", "end"],
+  ["\u001bOH", "home"],
+  ["\u001bOF", "end"],
+  ["\u001b[A", "up"],
+  ["\u001b[B", "down"],
+];
+
+const DEMO_ESCAPE_SEQUENCES = DEMO_ESCAPE_ACTIONS.map(([sequence]) => sequence);
+
+/**
+ * Small readline-compatible line discipline for the static lesson terminal.
+ *
+ * xterm.js deliberately forwards key sequences instead of editing input. The
+ * native companion receives those sequences in a real shell, but the static
+ * demo needs a bounded browser-side equivalent so keyboard practice still
+ * feels like a terminal. This adapter only emits terminal bytes; it does not
+ * participate in the Responses transport or mutate the workspace store.
+ */
+export function createDemoTerminalLineEditor(emit: DemoTerminalOutput): {
+  write(data: string): void;
+  dispose(): void;
+} {
+  let characters: string[] = [];
+  let cursor = 0;
+  let history: string[] = [];
+  let historyIndex = -1;
+  let pendingEscape = "";
+  let disposed = false;
+
+  const output = (value: string) => {
+    if (!disposed) emit(value);
+  };
+
+  const redraw = () => {
+    const distanceFromEnd = characters.length - cursor;
+    output(
+      `\r\u001b[2K${DEMO_PROMPT}${characters.join("")}${
+        distanceFromEnd > 0 ? `\u001b[${distanceFromEnd}D` : ""
+      }`,
+    );
+  };
+
+  const resetLine = () => {
+    characters = [];
+    cursor = 0;
+    historyIndex = -1;
+  };
+
+  const setLine = (value: string) => {
+    characters = Array.from(value);
+    cursor = characters.length;
+  };
+
+  const moveHistory = (direction: "up" | "down") => {
+    if (history.length === 0) return;
+    if (direction === "up") {
+      historyIndex = historyIndex < 0 ? history.length - 1 : Math.max(0, historyIndex - 1);
+      setLine(history[historyIndex] ?? "");
+      redraw();
+      return;
+    }
+    if (historyIndex < 0) return;
+    if (historyIndex >= history.length - 1) {
+      historyIndex = -1;
+      setLine("");
+    } else {
+      historyIndex += 1;
+      setLine(history[historyIndex] ?? "");
+    }
+    redraw();
+  };
+
+  const execute = (command: string): string => {
+    const [name = "", ...argumentsList] = command.trim().split(/\s+/);
+    switch (name) {
+      case "":
+        return "";
+      case "pwd":
+        return "/workspace/cockpit-lab\r\n";
+      case "ls":
+        return "AGENTS.md  README.md  package.json  scripts  src\r\n";
+      case "echo":
+        return `${argumentsList.join(" ")}\r\n`;
+      case "cat": {
+        const path = argumentsList[0];
+        if (path === "README.md")
+          return "# Cockpit Lab\r\n\r\nA browser-persistent workspace for the Codex harness lesson.\r\n";
+        if (path === "package.json") return '{"name":"cockpit-lab"}\r\n';
+        return `${path ?? "cat"}: No such file\r\n`;
+      }
+      case "clear":
+        return "\u001b[2J\u001b[H";
+      case "help":
+        return "Available commands: pwd, ls, cat, echo, clear, help\r\n";
+      case "codex":
+        return "Codex Cockpit demo runtime (use companion mode for the native CLI)\r\n";
+      case "npx":
+        return "npx is available in companion mode; this static terminal is a lesson sandbox\r\n";
+      default:
+        return `${name}: command not found (demo)\r\n`;
+    }
+  };
+
+  const submit = () => {
+    const command = characters.join("");
+    if (command && history.at(-1) !== command) {
+      history = [...history, command].slice(-DEMO_HISTORY_LIMIT);
+    }
+    output("\r\n");
+    output(execute(command));
+    output(DEMO_PROMPT);
+    resetLine();
+  };
+
+  const handleControl = (character: string): boolean => {
+    switch (character) {
+      case "\u0001": // Ctrl-A / beginning of line
+        cursor = 0;
+        redraw();
+        return true;
+      case "\u0005": // Ctrl-E / end of line
+        cursor = characters.length;
+        redraw();
+        return true;
+      case "\u000b": // Ctrl-K / kill to end
+        characters = characters.slice(0, cursor);
+        historyIndex = -1;
+        redraw();
+        return true;
+      case "\u000c": // Ctrl-L / clear screen
+        output("\u001b[2J\u001b[H");
+        redraw();
+        return true;
+      case "\u0003": // Ctrl-C / cancel line
+        output("^C\r\n");
+        resetLine();
+        output(DEMO_PROMPT);
+        return true;
+      case "\u0004": // Ctrl-D / delete at cursor (EOF on an empty shell line)
+        if (cursor < characters.length) {
+          characters.splice(cursor, 1);
+          historyIndex = -1;
+          redraw();
+        }
+        return true;
+      case "\u0015": // Ctrl-U / kill to beginning
+        characters = characters.slice(cursor);
+        cursor = 0;
+        historyIndex = -1;
+        redraw();
+        return true;
+      case "\u0017": {
+        // Ctrl-W / erase previous word
+        const beforeCursor = characters
+          .slice(0, cursor)
+          .join("")
+          .replace(/\s+\S*$/, "");
+        characters = [...Array.from(beforeCursor), ...characters.slice(cursor)];
+        cursor = Array.from(beforeCursor).length;
+        historyIndex = -1;
+        redraw();
+        return true;
+      }
+      default:
+        return false;
+    }
+  };
+
+  const handleEscape = (input: string, offset: number): number | undefined => {
+    const remaining = input.slice(offset);
+    for (const [sequence, action] of DEMO_ESCAPE_ACTIONS) {
+      if (!remaining.startsWith(sequence)) continue;
+      switch (action) {
+        case "left":
+          cursor = Math.max(0, cursor - 1);
+          redraw();
+          break;
+        case "right":
+          cursor = Math.min(characters.length, cursor + 1);
+          redraw();
+          break;
+        case "home":
+          cursor = 0;
+          redraw();
+          break;
+        case "end":
+          cursor = characters.length;
+          redraw();
+          break;
+        case "delete":
+          if (cursor < characters.length) {
+            characters.splice(cursor, 1);
+            historyIndex = -1;
+            redraw();
+          }
+          break;
+        case "up":
+        case "down":
+          moveHistory(action);
+          break;
+      }
+      return offset + sequence.length;
+    }
+    if (DEMO_ESCAPE_SEQUENCES.some((sequence) => sequence.startsWith(remaining))) return undefined;
+    return offset + 1;
+  };
+
+  return {
+    write(data) {
+      if (disposed) return;
+      const input = pendingEscape + data;
+      pendingEscape = "";
+      let index = 0;
+      while (index < input.length) {
+        if (input[index] === "\u001b") {
+          const next = handleEscape(input, index);
+          if (next === undefined) {
+            pendingEscape = input.slice(index);
+            break;
+          }
+          index = next;
+          continue;
+        }
+        const character = input[index] ?? "";
+        index += 1;
+        if (character === "\r" || character === "\n") {
+          submit();
+          continue;
+        }
+        if (character === "\u007f" || character === "\b") {
+          if (cursor > 0) {
+            characters.splice(cursor - 1, 1);
+            cursor -= 1;
+            historyIndex = -1;
+            redraw();
+          }
+          continue;
+        }
+        if (handleControl(character)) continue;
+        if (character >= " " && character !== "\u007f") {
+          characters.splice(cursor, 0, character);
+          cursor += 1;
+          historyIndex = -1;
+          redraw();
+        }
+      }
+    },
+    dispose() {
+      disposed = true;
+      characters = [];
+      history = [];
+      pendingEscape = "";
+    },
+  };
+}
 export interface CockpitTransport {
   connect(sessionId: string, signal: AbortSignal): Promise<SessionSnapshot>;
   subscribe(listener: (snapshot: SessionSnapshot) => void): () => void;
@@ -154,16 +426,23 @@ export class DemoCockpitTransport extends BaseTransport implements CockpitTransp
     onStatus: (status: string) => void,
   ): TerminalConnection {
     const encoder = new TextEncoder();
+    const lineEditor = createDemoTerminalLineEditor((value) => onData(encoder.encode(value)));
+    let disposed = false;
     queueMicrotask(() => {
+      if (disposed) return;
       onStatus("demo");
-      onData(encoder.encode("Codex Cockpit demo terminal\r\n$ "));
+      onData(encoder.encode("Codex Cockpit demo terminal\r\n"));
+      onData(encoder.encode(DEMO_PROMPT));
     });
     return {
       write(data) {
-        onData(encoder.encode(data === "\r" ? "\r\n$ " : data));
+        lineEditor.write(data);
       },
       resize() {},
-      dispose() {},
+      dispose() {
+        disposed = true;
+        lineEditor.dispose();
+      },
     };
   }
   dispose(): void {

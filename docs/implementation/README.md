@@ -27,6 +27,14 @@ Dependency arrows point inward: platform and framework adapters depend on typed 
 
 The current MVP implements the two-seat demo, a bounded in-memory companion ledger, the human Responses loop, and a workspace shell over a portable pipe fallback. The pinned `codex --version` and `codex --help` resolve inside that workspace. Native PTY, durable event replay, and companion-owned live app-server initialization remain production targets. The local demo uses the same transport interface as the companion; cross-window synchronization is an adapter behavior, not a second domain model.
 
+The static demo includes a browser-only workspace snapshot. The Explorer reads a
+session-namespaced IndexedDB store and falls back to a bounded in-memory seed when
+storage is unavailable. It is intentionally not the companion's authoritative
+filesystem: connected mode continues to expose logical paths from the host
+workspace. The demo xterm also has a small readline-compatible line discipline
+(editing, history, control keys, and a bounded command set) so input can be
+corrected before Enter; it is not a shell or a Codex runtime.
+
 ## Contract sources
 
 Codex contracts generated from pinned `0.151.0` into disposable integration output are the verification source at the app-server boundary and are never edited by hand. Generated clients are not yet committed or consumed by the companion. Project-owned envelopes and domain events live under `packages/protocol`. Responses examples under `tests/fixtures/responses` are deterministic teaching and regression fixtures; they are not claims of full OpenAI API conformance.
