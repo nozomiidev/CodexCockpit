@@ -9,7 +9,7 @@
     "pnpm": ">=11.24.0 <12"
   },
   "scripts": {
-    "build": "corepack pnpm --recursive --if-present build",
+    "build": "corepack pnpm --recursive --if-present build && node scripts/stage-static-build.mjs",
     "dev": "corepack pnpm --filter @codex-cockpit/web dev",
     "dev:companion": "corepack pnpm --filter @codex-cockpit/companion dev",
     "format": "biome check --write . && prettier --write \"**/*.{md,mdx,yaml,yml}\"",

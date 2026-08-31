@@ -23,8 +23,7 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   webServer: {
-    command:
-      "corepack pnpm --filter @codex-cockpit/web exec vite --host 127.0.0.1 --port 4173",
+    command: "corepack pnpm --filter @codex-cockpit/web exec vite --host 127.0.0.1 --port 4173",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

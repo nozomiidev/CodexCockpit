@@ -42,6 +42,11 @@ pnpm verify
 pnpm test:e2e
 ```
 
+`pnpm build` builds every workspace package and stages the web artifact in the
+ignored root `dist/` directory. This keeps the committed Sites manifest
+(`.openai/hosting.json`) reproducible without coupling the web package to a
+hosting provider's directory layout.
+
 Playwright starts the configured web server and waits for an explicit URL response. Tests must not add fixed sleeps. Local E2E session IDs include worker and retry identity so parallel runs cannot leak state.
 
 ## E2E acceptance map
@@ -52,6 +57,7 @@ Playwright starts the configured web server and waits for an explicit URL respon
 | `two-window-session.spec.ts`       | Left prompt delivery, right response, and one shared session        |
 | `keyboard-ime.spec.ts`             | Keyboard completion path and composition-safe shortcuts             |
 | `responsive-accessibility.spec.ts` | Mobile/desktop fit, automated WCAG checks, reduced motion           |
+| `explorer.spec.ts`                 | Left-seat Explorer, workspace seed, keyboard tree, mobile overlay   |
 
 `apps/companion/test/acceptance.test.ts` is the decisive native boundary test. It covers a
 validated Responses claim/commit with canonical SSE ordering and an authenticated terminal
